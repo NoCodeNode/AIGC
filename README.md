@@ -873,12 +873,11 @@ You are free to:
 - [ ] **Browser Screenshot Analysis** — Visual phishing detection
 - [ ] **Community Threat Database** — Crowdsourced threat intelligence
 - [ ] **Multi-Language Support** — i18n for global users
-- [ ] **Custom ML Models** — Offline detection capabilities
+- [ ] **Custom ML Models** — More efficient detection capabilities
 - [ ] **Security Feed Integration** — Real-time threat feeds
 - [ ] **Enhanced Certificate Analysis** — SSL/TLS deep inspection
 - [ ] **Reputation Scoring System** — Historical domain reputation
 - [ ] **Browser Sync** — Settings and history across devices
-- [ ] **Mobile Support** — Android/iOS browser extensions
 
 ---
 
