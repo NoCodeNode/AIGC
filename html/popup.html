@@ -1,0 +1,237 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Scamometer</title>
+  <style>
+    :root {
+      --bg:#0b1020; --card:#0f172a; --muted:#94a3b8; --text:#e2e8f0;
+      --green:#16a34a; --yellow:#eab308; --red:#dc2626; --cyan:#06b6d4; --border:#1f2937;
+    }
+    *{box-sizing:border-box; margin:0; padding:0;}
+    body{
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, sans-serif;
+      padding:16px; width: 420px; background: var(--bg); color: var(--text);
+    }
+    
+    .header{
+      display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;
+      padding-bottom:12px; border-bottom:1px solid var(--border);
+    }
+    .logo{ font-size:20px; display:flex; align-items:center; gap:8px; font-weight:700; }
+    
+    /* Toggle Switch */
+    .toggle-container{
+      display:flex; align-items:center; gap:12px; background:var(--card); 
+      padding:12px 16px; border-radius:12px; border:1px solid var(--border); margin-bottom:16px;
+    }
+    .toggle-label{ flex:1; font-weight:600; font-size:14px; }
+    .toggle-switch{
+      position:relative; width:52px; height:28px; background:#374151;
+      border-radius:14px; cursor:pointer; transition:all 0.3s;
+    }
+    .toggle-switch.active{ background:var(--cyan); }
+    .toggle-switch::after{
+      content:''; position:absolute; width:24px; height:24px; background:white;
+      border-radius:50%; top:2px; left:2px; transition:all 0.3s;
+    }
+    .toggle-switch.active::after{ left:26px; }
+    .toggle-status{
+      font-size:13px; color:var(--muted); font-weight:600;
+    }
+    .toggle-status.active{ color:var(--green); }
+    
+    .card{
+      background: var(--card); border:1px solid var(--border); 
+      border-radius:14px; padding:14px; margin-bottom:12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    }
+    .card h2{
+      font-size:15px; margin-bottom:10px; color:var(--cyan); font-weight:600;
+    }
+    
+    button{
+      padding:10px 16px; border-radius:10px; border:1px solid var(--border);
+      background: var(--card); color: var(--text); cursor:pointer;
+      transition: all 0.2s; font-weight:600; font-size:13px;
+    }
+    button:hover:not(:disabled){
+      border-color: var(--cyan); background: rgba(6, 182, 212, 0.1);
+      transform: translateY(-1px);
+    }
+    button:disabled{ opacity:0.5; cursor:not-allowed; }
+    button.primary{
+      background:var(--cyan); border-color:var(--cyan); color:var(--bg);
+    }
+    button.primary:hover:not(:disabled){ background:#0891b2; }
+    button.full-width{ width:100%; }
+    
+    .row{ display:flex; gap:10px; align-items:center; }
+    .col{ display:flex; flex-direction:column; gap:10px; }
+    .muted{ color: var(--muted); font-size:12px; line-height:1.5; }
+    
+    .gauge-container{
+      display:flex; gap:16px; align-items:center; padding:12px;
+      background:#0b1020; border-radius:10px;
+    }
+    .gauge{ width: 140px; height: 80px; flex-shrink:0; }
+    .score-info{ flex:1; min-width:0; }
+    .verdict{ font-size:16px; font-weight:700; margin-bottom:6px; }
+    .pill{
+      display:inline-block; font-size:11px; padding:4px 10px;
+      border-radius:999px; font-weight:600;
+    }
+    .pill.low{ color:var(--green); background:rgba(22,163,74,.15); border:1px solid var(--green); }
+    .pill.med{ color:var(--yellow); background:rgba(234,179,8,.15); border:1px solid var(--yellow); }
+    .pill.high{ color:var(--red); background:rgba(220,38,38,.15); border:1px solid var(--red); }
+    
+    .tags{ display:flex; flex-wrap: wrap; gap:6px; margin-top:8px; }
+    .tag{
+      font-size:11px; padding:5px 10px; border-radius:999px;
+      border:1px solid var(--border); font-weight:500;
+    }
+    .tag.pos{ border-color:rgba(22,163,74,.5); background:rgba(22,163,74,.1); color:var(--green); }
+    .tag.neg{ border-color:rgba(220,38,38,.5); background:rgba(220,38,38,.1); color:var(--red); }
+    
+    .actions-grid{
+      display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;
+    }
+    
+    a{ color: var(--cyan); text-decoration: none; font-weight:600; }
+    a:hover{ text-decoration: underline; }
+    
+    .footer{
+      margin-top:12px; padding-top:12px; border-top:1px solid var(--border);
+      text-align:center; font-size:11px; color:var(--muted);
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .analyzing{ animation: pulse 1.5s ease-in-out infinite; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">🧪 Scamometer</div>
+  </div>
+  
+  <!-- Extension Toggle -->
+  <div class="toggle-container">
+    <div class="toggle-label">Extension Status</div>
+    <div class="toggle-switch" id="toggleSwitch">
+    </div>
+    <div class="toggle-status" id="toggleStatus">OFF</div>
+  </div>
+  
+  <!-- API Key Prompt -->
+  <div id="needKey" class="card" style="display:none">
+    <h2>⚙️ Setup Required</h2>
+    <div class="muted">Add your AI provider API key to enable analysis.</div>
+    <button class="primary full-width" id="openOptions" style="margin-top:10px">
+      Configure API Key
+    </button>
+  </div>
+  
+  <!-- Loading State -->
+  <div id="loading" class="card" style="display:none">
+    <div class="analyzing" style="text-align:center; padding:20px;">
+      ⏳ Analyzing current page...
+    </div>
+  </div>
+  
+  <!-- Results -->
+  <div id="results" class="col" style="display:none">
+    <div class="card">
+      <div class="gauge-container">
+        <svg class="gauge" viewBox="0 0 100 60" aria-label="Risk Score">
+          <defs>
+            <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#16a34a"/>
+              <stop offset="55%" stop-color="#eab308"/>
+              <stop offset="100%" stop-color="#dc2626"/>
+            </linearGradient>
+          </defs>
+          <path d="M10,50 A40,40 0 0,1 90,50" stroke="url(#g)" stroke-width="10" fill="none" stroke-linecap="round"/>
+          <circle cx="50" cy="50" r="2" fill="#e2e8f0"/>
+          <line id="needle" x1="50" y1="50" x2="50" y2="15" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round"/>
+          <text id="scoreText" x="50" y="57" text-anchor="middle" font-size="10" fill="#e2e8f0">0/100</text>
+        </svg>
+        <div class="score-info">
+          <div class="verdict" id="verdict">—</div>
+          <div class="pill low" id="riskpill">Low risk</div>
+          <div class="muted" id="reason" style="margin-top:8px;">—</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card">
+      <h2>✅ Positive Indicators</h2>
+      <div class="tags" id="positives">
+        <span class="muted">None found</span>
+      </div>
+    </div>
+    
+    <div class="card">
+      <h2>🚩 Red Flags</h2>
+      <div class="tags" id="negatives">
+        <span class="muted">None found</span>
+      </div>
+    </div>
+    
+    <div class="card" id="summaryCard" style="display:none;">
+      <h2>📝 Page Summary (Model A)</h2>
+      <div class="muted" id="summaryText" style="margin-top:8px; line-height:1.5;">—</div>
+      <div class="tags" id="summaryLabels" style="margin-top:8px;"></div>
+    </div>
+    
+    <div class="card" id="payloadCard" style="display:none;">
+      <h2>📦 Outgoing Payload (Final)</h2>
+      <div style="display:flex; gap:8px; margin:8px 0;">
+        <button id="togglePayload" style="padding:6px 12px; font-size:12px;">Toggle Pretty/Minified</button>
+        <button id="copyPayload" style="padding:6px 12px; font-size:12px;">📋 Copy</button>
+      </div>
+      <pre id="payloadContent" style="font-size:11px; max-height:200px; overflow:auto;">—</pre>
+    </div>
+    
+    <div class="card" id="modelInfoCard" style="display:none;">
+      <h2>🤖 Model Information</h2>
+      <div style="font-size:12px; line-height:1.8;">
+        <div><strong>Model A (Summarizer):</strong> <span id="modelAInfo">—</span></div>
+        <div><strong>Model B (Judge):</strong> <span id="modelBInfo">—</span></div>
+        <div><strong>Timing:</strong> <span id="timingInfo">—</span></div>
+      </div>
+    </div>
+    
+    <div class="actions-grid">
+      <button id="reanalyze">🔄 Re-analyze</button>
+      <button id="copyReport">📋 Copy Report</button>
+    </div>
+  </div>
+  
+  <!-- Navigation Menu -->
+  <div id="navMenu" class="card" style="display:none">
+    <h2 style="margin-top:0;">Quick Access</h2>
+    <div class="col">
+      <button id="reportsBtn" class="primary full-width">📊 View Reports</button>
+      <button id="batchBtn" class="primary full-width">📦 Batch Processing</button>
+      <button id="tasksBtn" class="full-width">📋 Current Tasks</button>
+      <button id="analyticsBtn" class="full-width">📈 Analytics</button>
+      <button id="optionsBtn" class="full-width">⚙️ Settings</button>
+    </div>
+  </div>
+  
+  <!-- Disabled State -->
+  <div id="disabledState" class="card" style="display:none">
+    <h2>Extension Disabled</h2>
+    <div class="muted">Toggle the switch above to enable Scamometer analysis.</div>
+  </div>
+  
+  <div class="footer">
+    Built by <strong>Arnab Mandal</strong>
+  </div>
+  
+  <script src="../js/popup.js"></script>
+</body>
+</html>

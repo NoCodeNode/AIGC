@@ -1,0 +1,327 @@
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Scamometer Options</title>
+    <style>
+      :root {
+        --bg:#0b1020; --card:#0f172a; --muted:#94a3b8; --text:#e2e8f0;
+        --green:#16a34a; --yellow:#eab308; --red:#dc2626; --cyan:#06b6d4; --border:#1f2937;
+      }
+      body{ font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, sans-serif; margin:0; padding:24px; color: var(--text); background: var(--bg); max-width:1200px; margin:0 auto; }
+      h1{ font-size:28px; margin:0 0 8px; }
+      h2{ font-size:20px; margin:32px 0 16px; color: var(--cyan); }
+      h3{ font-size:16px; margin:16px 0 8px; }
+      label{ display:block; margin-top:12px; font-weight:600; font-size:14px; }
+      input, select, textarea{ width:100%; padding:10px; margin-top:6px; border-radius:10px; border:1px solid var(--border); background: var(--card); color: var(--text); font-family:inherit; font-size:14px; }
+      input:focus, select:focus, textarea:focus{ outline:none; border-color: var(--cyan); }
+      .muted{ color: var(--muted); font-size:13px; }
+      button{ padding:10px 16px; border-radius:10px; border:1px solid var(--border); background: var(--card); color: var(--text); cursor:pointer; transition: all 0.2s; font-weight:600; }
+      button:hover{ border-color: var(--cyan); background: rgba(6, 182, 212, 0.1); transform: translateY(-1px); }
+      button.primary{ background: var(--cyan); color: var(--bg); border-color: var(--cyan); }
+      button.primary:hover{ background: #0891b2; }
+      button.danger{ border-color: rgba(220,38,38,.4); color: var(--red); }
+      button.danger:hover{ background: rgba(220,38,38,.1); }
+      pre{ background: var(--bg); color: var(--text); padding:12px; border-radius:12px; border:1px solid var(--border); max-height:340px; overflow:auto; font-size:12px; }
+      .grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+      .card{ background: var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; box-shadow: 0 1px 8px rgba(0,0,0,.25); margin-bottom:20px; }
+      .section{ margin-bottom:24px; }
+      .list-item{ display:flex; align-items:center; gap:12px; padding:8px; background: var(--bg); border-radius:8px; margin-top:8px; }
+      .list-item-text{ flex:1; font-size:14px; }
+      .list-item button{ padding:6px 12px; font-size:12px; }
+      .status-msg{ padding:8px 12px; border-radius:8px; margin-top:12px; font-size:13px; }
+      .status-msg.success{ background: rgba(22,163,74,.15); border:1px solid rgba(22,163,74,.3); color: var(--green); }
+      .status-msg.error{ background: rgba(220,38,38,.15); border:1px solid rgba(220,38,38,.3); color: var(--red); }
+      .help-text{ font-size:12px; color: var(--muted); margin-top:4px; }
+      .stats{ display:flex; gap:16px; margin-top:12px; }
+      .stat{ flex:1; padding:12px; background: var(--bg); border-radius:8px; text-align:center; }
+      .stat-value{ font-size:24px; font-weight:700; color: var(--cyan); }
+      .stat-label{ font-size:11px; color: var(--muted); text-transform:uppercase; margin-top:4px; }
+    </style>
+  </head>
+  <body>
+    <h1>⚙️ Scamometer Settings</h1>
+    <p class="muted">Configure your Scamometer extension. All data is stored locally in your browser.</p>
+
+    <div class="card">
+      <h2 style="margin-top:0;">🤖 AI Configuration</h2>
+      <p class="muted" style="margin-bottom:16px;">Configure two independent AI models for concurrent analysis. Model A summarizes page content, Model B makes the final phishing verdict.</p>
+      
+      <div style="margin-bottom:24px; padding:16px; background:rgba(59,130,246,0.1); border-left:4px solid #3b82f6; border-radius:8px;">
+        <p style="font-size:13px; color:#3b82f6; margin-bottom:8px; font-weight:600;">💡 How It Works:</p>
+        <p style="font-size:12px; color:var(--muted); line-height:1.6; margin:0;">
+          <strong>Model A</strong> (optional) analyzes page text concurrently while <strong>Model B</strong> (required) evaluates DNS/RDAP data. 
+          Results merge for final verdict. If Model A is disabled, raw text is used instead. Both run in parallel for 40-50% faster analysis.
+        </p>
+      </div>
+      <h3 style="color:var(--cyan); margin-top:20px; margin-bottom:12px;">🔍 Model A: Content Summarizer</h3>
+      <p class="muted" style="margin-bottom:12px;">Analyzes page content and identifies intents (login forms, payment requests, etc.)</p>
+      
+      <div class="section">
+        <label>Provider
+          <select id="modelA_provider">
+            <option value="none">None (Use text only)</option>
+            <option value="gemini">Google Gemini</option>
+            <option value="cerebras">Cerebras AI</option>
+            <option value="custom">Custom LLM</option>
+          </select>
+          <div class="help-text">Model A is optional. If not configured, raw text will be used instead.</div>
+        </label>
+        
+        <div id="modelA_geminiConfig" style="display:none;">
+          <label>Gemini API Key
+            <input id="modelA_apiKey" type="password" placeholder="AIza..." autocomplete="off">
+          </label>
+          <label>Model
+            <select id="modelA_model">
+              <option value="gemini-2.5-flash">gemini-2.5-flash (Fast, Recommended)</option>
+              <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite (Fastest)</option>
+              <option value="gemini-2.5-pro">gemini-2.5-pro (Most Accurate)</option>
+            </select>
+          </label>
+        </div>
+        
+        <div id="modelA_cerebrasConfig" style="display:none;">
+          <label>Cerebras API Key
+            <input id="modelA_cerebrasApiKey" type="password" placeholder="csk-..." autocomplete="off">
+          </label>
+          <label>Model
+            <select id="modelA_cerebrasModel">
+              <option value="llama-3.3-70b">Llama 3.3 70B</option>
+              <option value="qwen-3-32b">Qwen 3 32B</option>
+            </select>
+          </label>
+        </div>
+        
+        <div id="modelA_customConfig" style="display:none;">
+          <label>API Endpoint
+            <input id="modelA_customEndpoint" type="text" placeholder="https://api.example.com/v1/chat/completions">
+          </label>
+          <label>API Key
+            <input id="modelA_customApiKey" type="password" placeholder="Your API key">
+          </label>
+          <label>Model Name
+            <input id="modelA_customModel" type="text" placeholder="gpt-4">
+          </label>
+        </div>
+        
+        <label>Max Text Length (tokens)
+          <input id="modelA_maxTokens" type="number" min="500" max="10000" value="5000" placeholder="5000">
+          <div class="help-text">Maximum text length to send to summarizer (500-10000)</div>
+        </label>
+        
+        <label>Timeout (ms)
+          <input id="modelA_timeout" type="number" min="5000" max="30000" value="10000" placeholder="10000">
+          <div class="help-text">Timeout for summarizer API call (5000-30000 ms)</div>
+        </label>
+      </div>
+      
+      <h3 style="color:var(--cyan); margin-top:24px; margin-bottom:12px;">⚖️ Model B: Verdict Judge</h3>
+      <p class="muted" style="margin-bottom:12px;">Makes the final phishing/scam verdict using page summary + DNS + RDAP data</p>
+      
+      <div class="section">
+        <label>Provider
+          <select id="modelB_provider">
+            <option value="gemini">Google Gemini</option>
+            <option value="cerebras">Cerebras AI</option>
+            <option value="custom">Custom LLM</option>
+          </select>
+        </label>
+        
+        <div id="modelB_geminiConfig">
+          <label>Gemini API Key
+            <input id="modelB_apiKey" type="password" placeholder="AIza..." autocomplete="off">
+          </label>
+          <label>Model
+            <select id="modelB_model">
+              <option value="gemini-2.5-flash">gemini-2.5-flash (Recommended)</option>
+              <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite (Faster)</option>
+              <option value="gemini-2.5-pro">gemini-2.5-pro (Most Accurate)</option>
+            </select>
+          </label>
+        </div>
+        
+        <div id="modelB_cerebrasConfig" style="display:none;">
+          <label>Cerebras API Key
+            <input id="modelB_cerebrasApiKey" type="password" placeholder="csk-..." autocomplete="off">
+          </label>
+          <label>Model
+            <select id="modelB_cerebrasModel">
+              <option value="llama-3.3-70b">Llama 3.3 70B</option>
+              <option value="qwen-3-32b">Qwen 3 32B</option>
+            </select>
+          </label>
+        </div>
+        
+        <div id="modelB_customConfig" style="display:none;">
+          <label>API Endpoint
+            <input id="modelB_customEndpoint" type="text" placeholder="https://api.example.com/v1/chat/completions">
+          </label>
+          <label>API Key
+            <input id="modelB_customApiKey" type="password" placeholder="Your API key">
+          </label>
+          <label>Model Name
+            <input id="modelB_customModel" type="text" placeholder="gpt-4">
+          </label>
+        </div>
+        
+        <div class="grid">
+          <label>Temperature
+            <input id="modelB_temperature" type="number" min="0" max="2" step="0.1" value="0.2" placeholder="0.2">
+            <div class="help-text">0.0 = deterministic, 2.0 = creative</div>
+          </label>
+          <label>Max Tokens
+            <input id="modelB_maxTokens" type="number" min="100" max="10000" value="2048" placeholder="2048">
+            <div class="help-text">Maximum response length</div>
+          </label>
+        </div>
+      </div>
+      
+      <div style="margin-top:16px; padding:12px; background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.3); border-radius:8px;">
+        <p style="font-size:13px; color:#3b82f6; margin-bottom:8px;"><strong>💡 How It Works:</strong></p>
+        <p style="font-size:12px; color:var(--muted); line-height:1.6;">
+          Both models run concurrently for maximum speed. Model A summarizes the page content while Model B's data (DNS + RDAP) is being collected. 
+          Then, Model B (Judge) receives the compact summary + DNS/RDAP payload and makes the final verdict. 
+          If Model A is not configured, raw text will be used instead.
+        </p>
+      </div>
+      
+      <div style="margin-top:16px; display:flex; gap:12px; align-items:center;">
+        <button id="saveDualAI" class="primary">💾 Save Dual AI Configuration</button>
+        <span id="dualAIStatus" class="muted"></span>
+      </div>
+    </div>
+    
+    <div class="card">
+      <h2 style="margin-top:0;">🎨 Advanced AI Configuration</h2>
+      <div class="section">
+        <label>Custom System Prompt (Optional - Works with ALL Providers)
+          <textarea id="globalSystemPrompt" rows="8" placeholder="Leave empty to use default Scamometer prompt, or enter your custom prompt for ALL AI providers (Gemini, Cerebras, Custom)..."></textarea>
+          <div class="help-text">Override the default system prompt for <strong>all AI providers</strong> (Gemini, Cerebras, and Custom LLM). Leave empty to use Scamometer's optimized prompt.</div>
+        </label>
+        
+        <div style="margin-top:12px; padding:12px; background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.3); border-radius:8px;">
+          <p style="font-size:13px; color:#3b82f6; margin-bottom:8px;"><strong>💡 Universal Setting:</strong></p>
+          <p style="font-size:12px; color:var(--muted);">This custom prompt will be used by <strong>Gemini</strong>, <strong>Cerebras</strong>, and <strong>Custom LLM</strong> providers. Perfect for fine-tuning detection behavior across all models.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0;">Whitelist & Blacklist</h2>
+      <div class="grid">
+        <div>
+          <h3>✅ Trusted Sites (Whitelist)</h3>
+          <p class="muted">Sites you trust. Always marked as safe, no analysis needed.</p>
+          <div style="display:flex; gap:8px;">
+            <input id="whitelistInput" type="text" placeholder="example.com" style="width:auto; flex:1;">
+            <button id="addWhitelist">Add</button>
+          </div>
+          <div id="whitelistItems"></div>
+        </div>
+        <div>
+          <h3>⛔ Blocked Sites (Blacklist)</h3>
+          <p class="muted">Sites you want to avoid. Always marked as dangerous.</p>
+          <div style="display:flex; gap:8px;">
+            <input id="blacklistInput" type="text" placeholder="badsite.com" style="width:auto; flex:1;">
+            <button id="addBlacklist">Add</button>
+          </div>
+          <div id="blacklistItems"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-top:0;">Storage Statistics</h2>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-value" id="storageUsed">-</div>
+          <div class="stat-label">Storage Used</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="cacheCount">-</div>
+          <div class="stat-label">Cached Analyses</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="whitelistCount">-</div>
+          <div class="stat-label">Whitelisted</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="blacklistCount">-</div>
+          <div class="stat-label">Blacklisted</div>
+        </div>
+      </div>
+      <div style="margin-top:16px;">
+        <button id="clearCache">🗑️ Clear Analysis Cache</button>
+        <button id="clearAll" class="danger">⚠️ Clear All Data</button>
+      </div>
+    </div>
+
+    <h2>Webhook Integration</h2>
+    <div class="card">
+      <p class="muted">Configure webhook to receive batch processing results automatically. The extension will POST results to your endpoint when batch processing completes.</p>
+      
+      <div class="section">
+        <label>
+          <input type="checkbox" id="webhookEnabled" style="width:auto; margin-right:8px;">
+          Enable Webhook Notifications
+        </label>
+        <div class="help-text">Send POST requests with batch results to the configured URL</div>
+      </div>
+      
+      <div class="section">
+        <label>Webhook URL
+          <input type="url" id="webhookUrl" placeholder="https://your-server.com/api/webhook">
+        </label>
+        <div class="help-text">The URL where batch results will be sent via POST request</div>
+      </div>
+      
+      <div class="section">
+        <label>Authorization Header (Optional)
+          <input type="text" id="webhookAuth" placeholder="Bearer your-token-here">
+        </label>
+        <div class="help-text">Optional: Authorization header value for authenticated endpoints</div>
+      </div>
+      
+      <div style="display:flex; gap:8px; margin-top:16px;">
+        <button id="saveWebhook" class="primary">Save Webhook Config</button>
+        <button id="testWebhook">Test Webhook</button>
+      </div>
+      <div id="webhookStatus"></div>
+      
+      <h3 style="margin-top:24px;">External API Access</h3>
+      <p class="muted">Allow external websites to trigger batch processing via chrome.runtime.sendMessage. Add trusted domain origins below.</p>
+      
+      <div style="display:flex; gap:8px; margin-top:12px;">
+        <input type="text" id="newWebhookDomain" placeholder="https://example.com" style="flex:1;">
+        <button id="addWebhookDomain">Add Domain</button>
+      </div>
+      <div id="webhookDomains" style="margin-top:12px;"></div>
+    </div>
+
+    <h2>Diagnostics</h2>
+    <div class="grid">
+      <div>
+        <h3>DNS Test</h3>
+        <p class="muted">Google DoH then Cloudflare DoH (JSON).</p>
+        <button id="testDns">Run DNS Test</button>
+        <pre id="outDns"></pre>
+      </div>
+      <div>
+        <h3>RDAP Test</h3>
+        <p class="muted">Automatically detects IPs and finds the registrable domain.</p>
+        <button id="testRdap">Run RDAP Test</button>
+        <pre id="outRdap"></pre>
+      </div>
+    </div>
+
+    <script src="../js/options.js"></script>
+  
+    <div class="card" style="margin-top:12px; padding:10px; border:1px solid #1f2937; border-radius:12px; background:#0f172a;">
+      <span class="muted">Built by <strong>Arnab Mandal</strong> — </span>
+      <a href="mailto:hello@arnabmandal.com" class="muted">hello@arnabmandal.com</a>
+    </div>
+    
+  </body>
+</html>
