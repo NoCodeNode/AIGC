@@ -1128,7 +1128,7 @@ REQUIRED JSON FORMAT (no markdown):
   "description": "Concise 1-2 sentence summary",
   "threatCategory": "phishing|brand_impersonation|typosquatting|scareware|financial_fraud|malware_distribution|fake_shop|tech_support_scam|survey_scam|credential_harvesting|social_engineering|suspicious_redirect|data_harvesting|other|null",
   "positives": ["List of legitimate indicators found"],
-  "negatives": ["List of suspicious/malicious indicators found"]
+  "negatives": ["List suspicious/malicious indicators found, and remember: Do NOT emit filler placeholders anywhere (examples: "None detected", "No threat detected", "N/A", "✗", "✓", "-", "nothing", "no issues"). These tokens must never appear as array elements or values."]
 }
 
 VERDICT THRESHOLDS:
